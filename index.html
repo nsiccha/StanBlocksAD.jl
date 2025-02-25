@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nikolas Siccha">
+
+<title>StanBlocksAD.jl</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-2c46d8c8cf1c501c791ade97b9c7710a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">StanBlocksAD.jl</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./index.html" aria-current="page"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/nsiccha/StanBlocksAD.jl"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#how-to-use" id="toc-how-to-use" class="nav-link active" data-scroll-target="#how-to-use">How to use</a>
+  <ul class="collapse">
+  <li><a href="#auto" id="toc-auto" class="nav-link" data-scroll-target="#auto"><code>@auto</code></a>
+  <ul class="collapse">
+  <li><a href="#trivial-example-my_square" id="toc-trivial-example-my_square" class="nav-link" data-scroll-target="#trivial-example-my_square">Trivial example: <code>my_square</code></a></li>
+  <li><a href="#nontrivial-example-stanblocks.normal_lpdf" id="toc-nontrivial-example-stanblocks.normal_lpdf" class="nav-link" data-scroll-target="#nontrivial-example-stanblocks.normal_lpdf">Nontrivial example: <code>StanBlocks.normal_lpdf</code></a></li>
+  </ul></li>
+  <li><a href="#overlay" id="toc-overlay" class="nav-link" data-scroll-target="#overlay"><code>@overlay</code></a>
+  <ul class="collapse">
+  <li><a href="#example-base.sumxfloat64" id="toc-example-base.sumxfloat64" class="nav-link" data-scroll-target="#example-base.sumxfloat64">Example: <code>Base.sum(x::Float64)</code></a></li>
+  </ul></li>
+  <li><a href="#rule" id="toc-rule" class="nav-link" data-scroll-target="#rule"><code>@rule</code></a>
+  <ul class="collapse">
+  <li><a href="#trivial-examples" id="toc-trivial-examples" class="nav-link" data-scroll-target="#trivial-examples">Trivial examples</a></li>
+  <li><a href="#non-trivial-example-my_sum" id="toc-non-trivial-example-my_sum" class="nav-link" data-scroll-target="#non-trivial-example-my_sum">Non-trivial example: <code>my_sum</code></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#how-does-it-work" id="toc-how-does-it-work" class="nav-link" data-scroll-target="#how-does-it-work">How does it work?</a></li>
+  <li><a href="#why" id="toc-why" class="nav-link" data-scroll-target="#why">Why?</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><a href="(https://nsiccha.github.io/StanBlocksAD.jl/)">StanBlocksAD.jl</a></h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nikolas Siccha </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>PROOF OF CONCEPT: A minimal performant reverse AD framework working on the AST level.</p>
+<p>Supports <a href="https://github.com/compintell/Mooncake.jl/issues/455">“Activity Analysis”</a> and <a href="https://github.com/compintell/Mooncake.jl/issues/403">“Stateful Hand-Written Rules”</a>. Does not support branches or loops.</p>
+<section id="how-to-use" class="level1">
+<h1>How to use</h1>
+<p>StanBlocksAD.jl relies on either wrapping the user-written code in one of its macros or on hand-written rules. AD can be dona via the <code>@auto</code> or the <code>@overlay</code> macro, hand-written rules can be provided via the <code>@rule</code> macro. Using the the <code>@auto</code> or the <code>@overlay</code> macro is of course easier than using the <code>@rule</code> macro, but also more limited.</p>
+<section id="auto" class="level2">
+<h2 class="anchored" data-anchor-id="auto"><code>@auto</code></h2>
+<p>“Automatically” define the standard (without duals), the forward and the reverse pass for a function. See usage in <a href="https://github.com/nsiccha/StanBlocksAD.jl/blob/fa2d3564642ebff2bfb6ac322965e2211552c8c4/src/StanBlocksAD.jl#L500-L516"><code>src/StanBlocksAD.jl</code></a>.</p>
+<section id="trivial-example-my_square" class="level3">
+<h3 class="anchored" data-anchor-id="trivial-example-my_square">Trivial example: <code>my_square</code></h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Macro usage</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Macro expansion</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@auto</span> <span class="pp">@inline</span> <span class="fu">my_square</span>(x) <span class="op">=</span> <span class="cf">return</span> x <span class="op">*</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div id="344e2891" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div class="ansi-escaped-output">
+<pre>quote
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:381 =#</span>
+    my_square(x) = begin
+            $(Expr(:meta, :inline))
+            <span class="ansi-bright-black-fg">#= In[3]:1 =#</span>
+            return x * x
+        end
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:382 =#</span>
+    inner_forward(PB, _::AbstractDual{&lt;:typeof(my_square)}, x::AbstractDual{&lt;:Any}) = begin
+            $(Expr(:meta, :inline))
+            <span class="ansi-bright-black-fg">#= In[3]:1 =#</span>
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB1, RV) = inner_forward(deaugment_pullback(PB[1]), maybeplaindual(*), maybeplaindual(x), maybeplaindual(x))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB1, RV) = augment_pullback(PB1, (maybeplaindual(*), maybeplaindual(x), maybeplaindual(x)), RV)
+            end
+            return (Tape((PB1,)), RV)
+        end
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:383 =#</span>
+    inner_pullback(PB, ADJ, _::AbstractDual{&lt;:typeof(my_square)}, x::AbstractDual{&lt;:Any}) = begin
+            $(Expr(:meta, :inline))
+            begin
+                <span class="ansi-bright-black-fg">#= In[3]:1 =#</span>
+                RV = outer_replay(PB[1], *, x, x)
+                nothing
+                RV = ADJ
+                (_, x, x) = outer_pullback(PB[1], RV, *, x, x)
+                <span class="ansi-bright-black-fg">#= In[3]:1 =#</span>
+            end
+            (StanBlocksAD.StrongZero(), x)
+        end
+end</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="nontrivial-example-stanblocks.normal_lpdf" class="level3">
+<h3 class="anchored" data-anchor-id="nontrivial-example-stanblocks.normal_lpdf">Nontrivial example: <code>StanBlocks.normal_lpdf</code></h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Macro usage</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Macro expansion</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@auto</span> <span class="pp">@inline</span> StanBlocks.<span class="fu">normal_lpdf</span>(y, loc, scale<span class="op">::</span><span class="dt">Real</span>) <span class="op">=</span> <span class="cf">begin</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    s2 <span class="op">=</span> StanBlocks.<span class="pp">@broadcasted</span> <span class="fu">square</span>(y<span class="op">-</span>loc)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">-</span>(<span class="fu">log</span>(scale) <span class="op">*</span> <span class="fu">length</span>(s2)<span class="op">+</span><span class="fl">.5</span><span class="fu">*my_sum</span>(s2)<span class="op">/</span><span class="fu">square</span>(scale))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div id="4da76ef8" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div class="ansi-escaped-output">
+<pre>quote
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:381 =#</span>
+    StanBlocks.normal_lpdf(y, loc, scale::Real) = begin
+            $(Expr(:meta, :inline))
+            <span class="ansi-bright-black-fg">#= In[4]:1 =#</span>
+            <span class="ansi-bright-black-fg">#= In[4]:2 =#</span>
+            s2 = Base.broadcasted(square, Base.broadcasted(-, y, loc))
+            <span class="ansi-bright-black-fg">#= In[4]:3 =#</span>
+            return -((log(scale) * length(s2) + (0.5 * my_sum(s2)) / square(scale)))
+        end
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:382 =#</span>
+    inner_forward(PB, _::AbstractDual{&lt;:typeof(StanBlocks.normal_lpdf)}, y::AbstractDual{&lt;:Any}, loc::AbstractDual{&lt;:Any}, scale::AbstractDual{&lt;:Real}) = begin
+            $(Expr(:meta, :inline))
+            <span class="ansi-bright-black-fg">#= In[4]:1 =#</span>
+            <span class="ansi-bright-black-fg">#= In[4]:2 =#</span>
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB1, TMP1) = inner_forward(deaugment_pullback(PB[1]), maybeplaindual(getproperty), maybeplaindual(Base), maybeplaindual(:broadcasted))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB1, TMP1) = augment_pullback(PB1, (maybeplaindual(getproperty), maybeplaindual(Base), maybeplaindual(:broadcasted)), TMP1)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB2, TMP2) = inner_forward(deaugment_pullback(PB[2]), maybeplaindual(getproperty), maybeplaindual(Base), maybeplaindual(:broadcasted))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB2, TMP2) = augment_pullback(PB2, (maybeplaindual(getproperty), maybeplaindual(Base), maybeplaindual(:broadcasted)), TMP2)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB3, TMP3) = inner_forward(deaugment_pullback(PB[3]), maybeplaindual(TMP2), maybeplaindual(-), maybeplaindual(y), maybeplaindual(loc))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB3, TMP3) = augment_pullback(PB3, (maybeplaindual(TMP2), maybeplaindual(-), maybeplaindual(y), maybeplaindual(loc)), TMP3)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB4, s2) = inner_forward(deaugment_pullback(PB[4]), maybeplaindual(TMP1), maybeplaindual(square), maybeplaindual(TMP3))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB4, s2) = augment_pullback(PB4, (maybeplaindual(TMP1), maybeplaindual(square), maybeplaindual(TMP3)), s2)
+            end
+            <span class="ansi-bright-black-fg">#= In[4]:3 =#</span>
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB5, TMP5) = inner_forward(deaugment_pullback(PB[5]), maybeplaindual(log), maybeplaindual(scale))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB5, TMP5) = augment_pullback(PB5, (maybeplaindual(log), maybeplaindual(scale)), TMP5)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB6, TMP6) = inner_forward(deaugment_pullback(PB[6]), maybeplaindual(length), maybeplaindual(s2))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB6, TMP6) = augment_pullback(PB6, (maybeplaindual(length), maybeplaindual(s2)), TMP6)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB7, TMP7) = inner_forward(deaugment_pullback(PB[7]), maybeplaindual(*), maybeplaindual(TMP5), maybeplaindual(TMP6))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB7, TMP7) = augment_pullback(PB7, (maybeplaindual(*), maybeplaindual(TMP5), maybeplaindual(TMP6)), TMP7)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB8, TMP8) = inner_forward(deaugment_pullback(PB[8]), maybeplaindual(my_sum), maybeplaindual(s2))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB8, TMP8) = augment_pullback(PB8, (maybeplaindual(my_sum), maybeplaindual(s2)), TMP8)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB9, TMP9) = inner_forward(deaugment_pullback(PB[9]), maybeplaindual(*), maybeplaindual(0.5), maybeplaindual(TMP8))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB9, TMP9) = augment_pullback(PB9, (maybeplaindual(*), maybeplaindual(0.5), maybeplaindual(TMP8)), TMP9)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB10, TMP10) = inner_forward(deaugment_pullback(PB[10]), maybeplaindual(square), maybeplaindual(scale))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB10, TMP10) = augment_pullback(PB10, (maybeplaindual(square), maybeplaindual(scale)), TMP10)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB11, TMP11) = inner_forward(deaugment_pullback(PB[11]), maybeplaindual(/), maybeplaindual(TMP9), maybeplaindual(TMP10))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB11, TMP11) = augment_pullback(PB11, (maybeplaindual(/), maybeplaindual(TMP9), maybeplaindual(TMP10)), TMP11)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB12, TMP12) = inner_forward(deaugment_pullback(PB[12]), maybeplaindual(+), maybeplaindual(TMP7), maybeplaindual(TMP11))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB12, TMP12) = augment_pullback(PB12, (maybeplaindual(+), maybeplaindual(TMP7), maybeplaindual(TMP11)), TMP12)
+            end
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB13, RV) = inner_forward(deaugment_pullback(PB[13]), maybeplaindual(-), maybeplaindual(TMP12))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB13, RV) = augment_pullback(PB13, (maybeplaindual(-), maybeplaindual(TMP12)), RV)
+            end
+            return (Tape((PB1, PB2, PB3, PB4, PB5, PB6, PB7, PB8, PB9, PB10, PB11, PB12, PB13)), RV)
+        end
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:383 =#</span>
+    inner_pullback(PB, ADJ, _::AbstractDual{&lt;:typeof(StanBlocks.normal_lpdf)}, y::AbstractDual{&lt;:Any}, loc::AbstractDual{&lt;:Any}, scale::AbstractDual{&lt;:Real}) = begin
+            $(Expr(:meta, :inline))
+            begin
+                <span class="ansi-bright-black-fg">#= In[4]:1 =#</span>
+                <span class="ansi-bright-black-fg">#= In[4]:2 =#</span>
+                TMP1 = outer_replay(PB[1], getproperty, Base, :broadcasted)
+                TMP2 = outer_replay(PB[2], getproperty, Base, :broadcasted)
+                TMP3 = outer_replay(PB[3], TMP2, -, y, loc)
+                s2 = outer_replay(PB[4], TMP1, square, TMP3)
+                <span class="ansi-bright-black-fg">#= In[4]:3 =#</span>
+                TMP5 = outer_replay(PB[5], log, scale)
+                TMP6 = outer_replay(PB[6], length, s2)
+                TMP7 = outer_replay(PB[7], *, TMP5, TMP6)
+                TMP8 = outer_replay(PB[8], my_sum, s2)
+                TMP9 = outer_replay(PB[9], *, 0.5, TMP8)
+                TMP10 = outer_replay(PB[10], square, scale)
+                TMP11 = outer_replay(PB[11], /, TMP9, TMP10)
+                TMP12 = outer_replay(PB[12], +, TMP7, TMP11)
+                RV = outer_replay(PB[13], -, TMP12)
+                nothing
+                RV = ADJ
+                (_, TMP12) = outer_pullback(PB[13], RV, -, TMP12)
+                (_, TMP7, TMP11) = outer_pullback(PB[12], TMP12, +, TMP7, TMP11)
+                (_, TMP9, TMP10) = outer_pullback(PB[11], TMP11, /, TMP9, TMP10)
+                (_, scale) = outer_pullback(PB[10], TMP10, square, scale)
+                (_, _, TMP8) = outer_pullback(PB[9], TMP9, *, 0.5, TMP8)
+                (_, s2) = outer_pullback(PB[8], TMP8, my_sum, s2)
+                (_, TMP5, TMP6) = outer_pullback(PB[7], TMP7, *, TMP5, TMP6)
+                (_, s2) = outer_pullback(PB[6], TMP6, length, s2)
+                (_, scale) = outer_pullback(PB[5], TMP5, log, scale)
+                <span class="ansi-bright-black-fg">#= In[4]:3 =#</span>
+                (TMP1, _, TMP3) = outer_pullback(PB[4], s2, TMP1, square, TMP3)
+                (TMP2, _, y, loc) = outer_pullback(PB[3], TMP3, TMP2, -, y, loc)
+                (_, _, _) = outer_pullback(PB[2], TMP2, getproperty, Base, :broadcasted)
+                (_, _, _) = outer_pullback(PB[1], TMP1, getproperty, Base, :broadcasted)
+                <span class="ansi-bright-black-fg">#= In[4]:2 =#</span>
+                <span class="ansi-bright-black-fg">#= In[4]:1 =#</span>
+            end
+            (StanBlocksAD.StrongZero(), y, loc, scale)
+        end
+end</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="overlay" class="level2">
+<h2 class="anchored" data-anchor-id="overlay"><code>@overlay</code></h2>
+<p>Does the same thing as <span class="citation" data-cites="auto">@auto</span>, but doesn’t define the “standard” function (without duals), like <a href="https://compintell.github.io/Mooncake.jl/stable/utilities/defining_rules/#Mooncake.@mooncake_overlay-utilities-defining_rules">Mooncake.@mooncake_overlay</a>. Useful for manually (hah!) doing AD for functions from external packages.</p>
+<p>See usage in <a href="https://github.com/nsiccha/StanBlocksAD.jl/blob/fa2d3564642ebff2bfb6ac322965e2211552c8c4/src/StanBlocksAD.jl#L517-L521"><code>src/StanBlocksAD.jl</code></a>.</p>
+<section id="example-base.sumxfloat64" class="level3">
+<h3 class="anchored" data-anchor-id="example-base.sumxfloat64">Example: <code>Base.sum(x::Float64)</code></h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Macro usage</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Macro expansion</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@overlay</span> <span class="pp">@inline</span> <span class="bu">Base</span>.<span class="fu">sum</span>(x<span class="op">::</span><span class="dt">Float64</span>) <span class="op">=</span> <span class="cf">return</span> <span class="fu">identity</span>(x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<div id="609f4358" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div class="ansi-escaped-output">
+<pre>quote
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:386 =#</span>
+    inner_forward(PB, _::AbstractDual{&lt;:typeof(Base.sum)}, x::AbstractDual{&lt;:Float64}) = begin
+            $(Expr(:meta, :inline))
+            <span class="ansi-bright-black-fg">#= In[5]:1 =#</span>
+            begin
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:237 =#</span>
+                (PB1, RV) = inner_forward(deaugment_pullback(PB[1]), maybeplaindual(identity), maybeplaindual(x))
+                <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:238 =#</span>
+                (PB1, RV) = augment_pullback(PB1, (maybeplaindual(identity), maybeplaindual(x)), RV)
+            end
+            return (Tape((PB1,)), RV)
+        end
+    <span class="ansi-bright-black-fg">#= /home/niko/github/nsiccha/StanBlocksAD.jl/src/StanBlocksAD.jl:387 =#</span>
+    inner_pullback(PB, ADJ, _::AbstractDual{&lt;:typeof(Base.sum)}, x::AbstractDual{&lt;:Float64}) = begin
+            $(Expr(:meta, :inline))
+            begin
+                <span class="ansi-bright-black-fg">#= In[5]:1 =#</span>
+                RV = outer_replay(PB[1], identity, x)
+                nothing
+                RV = ADJ
+                (_, x) = outer_pullback(PB[1], RV, identity, x)
+                <span class="ansi-bright-black-fg">#= In[5]:1 =#</span>
+            end
+            (StanBlocksAD.StrongZero(), x)
+        end
+end</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="rule" class="level2">
+<h2 class="anchored" data-anchor-id="rule"><code>@rule</code></h2>
+<p>The <code>@rule</code> macro makes it “easy” to define hand-written rules. It does funky things behind the scenes, and handles some function definition right hand sides in a special way. Best understood by looking at examples and simultaneously talking to me.</p>
+<p>See usage at <a href="https://github.com/nsiccha/StanBlocksAD.jl/blob/fa2d3564642ebff2bfb6ac322965e2211552c8c4/src/StanBlocksAD.jl#L428-L490"><code>src/StanBlocksAD.jl</code></a>.</p>
+<p>SOMETHING IMPORTANT IS MISSING, WILL ADD LATER.</p>
+<section id="trivial-examples" class="level3">
+<h3 class="anchored" data-anchor-id="trivial-examples">Trivial examples</h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Macro usage</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Macro expansion</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@rule</span> <span class="cf">begin</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># No pullback.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@inline</span> <span class="fu">inner_forward</span>(pb, f<span class="op">::</span><span class="dt">Colon</span>, i, j) <span class="op">=</span> <span class="cn">nothing</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Custom @inline'd pullback, "standard" forward pass </span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@inline</span> <span class="fu">inner_forward</span>(pb, f<span class="op">::</span><span class="dt">typeof</span>(identity), x) <span class="op">=</span> (a, df, dx)<span class="fu">-&gt;</span>(df, dx <span class="op">+</span> a)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Custom @inline'd pullback, "standard" forward pass. Uses non-captured but recomputed primal information in pullback.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@inline</span> <span class="fu">inner_forward</span>(pb, f<span class="op">::</span><span class="dt">typeof</span>(getproperty), x, i<span class="op">::</span><span class="dt">Symbol</span>) <span class="op">=</span> (a, df, dx, di) <span class="op">-&gt;</span> (df, <span class="fu">dmergeproperty</span>(dx, a, <span class="fu">primal</span>(di)), di)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Custom pullback and forward pass.</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@inline</span> <span class="fu">inner_forward</span>(pb, f<span class="op">::</span><span class="dt">typeof</span>(<span class="op">/</span>), x, y) <span class="op">=</span> <span class="cf">begin</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        rv <span class="op">=</span> <span class="fu">f</span>(x,y)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        (a, df, dx, dy) <span class="op">-&gt;</span> (df, dx<span class="op">+</span>a<span class="op">/</span>y, dy<span class="op">-</span>a<span class="op">*</span>rv<span class="op">/</span>y), rv</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div id="6427c53b" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div class="ansi-escaped-output">
+<pre>quote
+    <span class="ansi-bright-black-fg">#= In[6]:3 =#</span>
+    begin
+        inner_forward(pb::Any, f::AbstractDual{&lt;:Colon}, i::AbstractDual{&lt;:Any}, j::AbstractDual{&lt;:Any}) = begin
+                $(Expr(:meta, :inline))
+                <span class="ansi-bright-black-fg">#= In[6]:3 =#</span>
+                (nothing, plaindual((primal(f))(primal(i), primal(j))))
+            end
+        inner_forward(pb::Any, f::AbstractPlainDual{&lt;:Colon}, i::AbstractPlainDual{&lt;:Any}, j::AbstractPlainDual{&lt;:Any}) = begin
+                $(Expr(:meta, :inline))
+                (nothing, plaindual((primal(f))(primal(i), primal(j))))
+            end
+    end
+    <span class="ansi-bright-black-fg">#= In[6]:5 =#</span>
+    begin
+        inner_forward(pb::Any, f::AbstractDual{&lt;:typeof(identity)}, x::AbstractDual{&lt;:Any}) = begin
+                $(Expr(:meta, :inline))
+                <span class="ansi-bright-black-fg">#= In[6]:5 =#</span>
+                (((a, df, dx)-&gt;begin
+                            $(Expr(:meta, :inline))
+                            <span class="ansi-bright-black-fg">#= In[6]:5 =#</span>
+                            (df, dx + a)
+                        end), (primal(f))(primal(x)))
+            end
+        inner_forward(pb::Any, f::AbstractPlainDual{&lt;:typeof(identity)}, x::AbstractPlainDual{&lt;:Any}) = begin
+                $(Expr(:meta, :inline))
+                (nothing, plaindual((primal(f))(primal(x))))
+            end
+    end
+    <span class="ansi-bright-black-fg">#= In[6]:7 =#</span>
+    begin
+        inner_forward(pb::Any, f::AbstractDual{&lt;:typeof(getproperty)}, x::AbstractDual{&lt;:Any}, i::AbstractDual{&lt;:Symbol}) = begin
+                $(Expr(:meta, :inline))
+                <span class="ansi-bright-black-fg">#= In[6]:7 =#</span>
+                (((a, df, dx, di)-&gt;begin
+                            $(Expr(:meta, :inline))
+                            <span class="ansi-bright-black-fg">#= In[6]:7 =#</span>
+                            (df, dmergeproperty(dx, a, primal(di)), di)
+                        end), (primal(f))(primal(x), primal(i)))
+            end
+        inner_forward(pb::Any, f::AbstractPlainDual{&lt;:typeof(getproperty)}, x::AbstractPlainDual{&lt;:Any}, i::AbstractPlainDual{&lt;:Symbol}) = begin
+                $(Expr(:meta, :inline))
+                (nothing, plaindual((primal(f))(primal(x), primal(i))))
+            end
+    end
+    <span class="ansi-bright-black-fg">#= In[6]:9 =#</span>
+    begin
+        inner_forward(pb::Any, f::AbstractDual{&lt;:typeof(/)}, x::AbstractDual{&lt;:Any}, y::AbstractDual{&lt;:Any}) = begin
+                $(Expr(:meta, :inline))
+                <span class="ansi-bright-black-fg">#= In[6]:9 =#</span>
+                <span class="ansi-bright-black-fg">#= In[6]:10 =#</span>
+                rv = (primal(f))(primal(x), primal(y))
+                <span class="ansi-bright-black-fg">#= In[6]:11 =#</span>
+                (((a, df, dx, dy)-&gt;begin
+                            <span class="ansi-bright-black-fg">#= In[6]:11 =#</span>
+                            (df, dx + a / primal(y), dy - (a * rv) / primal(y))
+                        end), rv)
+            end
+        inner_forward(pb::Any, f::AbstractPlainDual{&lt;:typeof(/)}, x::AbstractPlainDual{&lt;:Any}, y::AbstractPlainDual{&lt;:Any}) = begin
+                $(Expr(:meta, :inline))
+                (nothing, plaindual((primal(f))(primal(x), primal(y))))
+            end
+    end
+end</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="non-trivial-example-my_sum" class="level3">
+<h3 class="anchored" data-anchor-id="non-trivial-example-my_sum">Non-trivial example: <code>my_sum</code></h3>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" role="tab" aria-controls="tabset-5-1" aria-selected="true">Macro usage</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" role="tab" aria-controls="tabset-5-2" aria-selected="false">Macro expansion</a></li></ul>
+<div class="tab-content">
+<div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
+<div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@rule</span> <span class="pp">@inline</span> <span class="fu">inner_forward</span>(pb, f<span class="op">::</span><span class="dt">typeof</span>(my_sum), x<span class="op">::</span><span class="dt">Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{1}}</span>) <span class="op">=</span> <span class="cf">begin</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    mem <span class="op">=</span> <span class="cf">if</span> <span class="fu">isa</span>(pb, Tape{<span class="dt">Missing</span>})</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        pb_type <span class="op">=</span> <span class="bu">Base</span>.<span class="fu">_return_type</span>(outer_forward, <span class="dt">Tuple</span>{Tape{<span class="dt">Missing</span>},<span class="fu">typeof</span>(broadcast_getindex),<span class="fu">typeof</span>(<span class="fu">dual</span>(x)),<span class="dt">Int64</span>})</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@assert</span> <span class="fu">isconcretetype</span>(pb_type) <span class="fu">outer_forward</span>(<span class="fu">Tape</span>(), broadcast_getindex, <span class="fu">dual</span>(x), <span class="fl">1</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        pb_type <span class="op">=</span> pb_type.types[<span class="fl">1</span>]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">Vector</span><span class="dt">{pb_type}</span>(<span class="cn">undef</span>, <span class="fu">length</span>(x))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">resize!</span>(pb.mem, <span class="fu">length</span>(x))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    rv <span class="op">=</span> <span class="fl">0</span>.</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    (mem[<span class="fl">1</span>], drv) <span class="op">=</span> <span class="fu">outer_forward</span>(<span class="fu">Tape</span>(), broadcast_getindex, <span class="fu">dual</span>(x), <span class="fl">1</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    rv <span class="op">=</span> <span class="fu">primal</span>(drv)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="pp">@inbounds</span> <span class="pp">@simd</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="fu">eachindex</span>(x)[<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>]</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        (mem[i], drv) <span class="op">=</span> <span class="fu">outer_forward</span>(<span class="fu">Tape</span>(), broadcast_getindex, <span class="fu">dual</span>(x), i)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        rv <span class="op">+=</span> <span class="fu">primal</span>(drv)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum_pb</span>(a, df, dx) <span class="op">=</span> <span class="cf">begin</span> </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        (_, dx, _) <span class="op">=</span> <span class="fu">outer_pullback</span>(mem[<span class="fl">1</span>], a, broadcast_getindex, dx, <span class="fl">1</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="pp">@inbounds</span> <span class="pp">@simd</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="fu">eachindex</span>(mem)[<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>]</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            (_, dx, _) <span class="op">=</span> <span class="fu">outer_pullback</span>(mem[i], a, broadcast_getindex, dx, i) </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">end</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        (df, dx)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    sum_pb, (rv)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
+<div id="461cf738" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div class="ansi-escaped-output">
+<pre>quote
+    inner_forward(pb::Any, f::AbstractDual{&lt;:typeof(my_sum)}, x::AbstractDual{&lt;:Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{1}}}) = begin
+            $(Expr(:meta, :inline))
+            <span class="ansi-bright-black-fg">#= In[7]:1 =#</span>
+            <span class="ansi-bright-black-fg">#= In[7]:2 =#</span>
+            mem = if pb isa Tape{Missing}
+                    <span class="ansi-bright-black-fg">#= In[7]:3 =#</span>
+                    pb_type = Base._return_type(outer_forward, Tuple{Tape{Missing}, typeof(broadcast_getindex), typeof(x), Int64})
+                    <span class="ansi-bright-black-fg">#= In[7]:4 =#</span>
+                    if isconcretetype(pb_type)
+                        nothing
+                    else
+                        Base.throw(Base.AssertionError((Base.Main).Base.string(outer_forward(Tape(), broadcast_getindex, x, 1))))
+                    end
+                    <span class="ansi-bright-black-fg">#= In[7]:5 =#</span>
+                    pb_type = pb_type.types[1]
+                    <span class="ansi-bright-black-fg">#= In[7]:6 =#</span>
+                    Vector{pb_type}(undef, length(primal(x)))
+                else
+                    <span class="ansi-bright-black-fg">#= In[7]:8 =#</span>
+                    resize!(pb.mem, length(primal(x)))
+                end
+            <span class="ansi-bright-black-fg">#= In[7]:10 =#</span>
+            rv = 0.0
+            <span class="ansi-bright-black-fg">#= In[7]:11 =#</span>
+            (mem[1], drv) = outer_forward(Tape(), broadcast_getindex, x, 1)
+            <span class="ansi-bright-black-fg">#= In[7]:12 =#</span>
+            rv = primal(drv)
+            <span class="ansi-bright-black-fg">#= In[7]:13 =#</span>
+            begin
+                $(Expr(:inbounds, true))
+                local var"#105#val" = begin
+                            <span class="ansi-bright-black-fg">#= simdloop.jl:69 =#</span>
+                            let var"##r#225" = (eachindex(primal(x)))[2:end]
+                                <span class="ansi-bright-black-fg">#= simdloop.jl:70 =#</span>
+                                for var"##i#226" = Base.simd_outer_range(var"##r#225")
+                                    <span class="ansi-bright-black-fg">#= simdloop.jl:71 =#</span>
+                                    let var"##n#227" = Base.simd_inner_length(var"##r#225", var"##i#226")
+                                        <span class="ansi-bright-black-fg">#= simdloop.jl:72 =#</span>
+                                        if zero(var"##n#227") &lt; var"##n#227"
+                                            <span class="ansi-bright-black-fg">#= simdloop.jl:74 =#</span>
+                                            let var"##i#228" = zero(var"##n#227")
+                                                <span class="ansi-bright-black-fg">#= simdloop.jl:75 =#</span>
+                                                while var"##i#228" &lt; var"##n#227"
+                                                    <span class="ansi-bright-black-fg">#= simdloop.jl:76 =#</span>
+                                                    local i = Base.simd_index(var"##r#225", var"##i#226", var"##i#228")
+                                                    <span class="ansi-bright-black-fg">#= simdloop.jl:77 =#</span>
+                                                    begin
+                                                        <span class="ansi-bright-black-fg">#= In[7]:14 =#</span>
+                                                        (mem[i], drv) = outer_forward(Tape(), broadcast_getindex, x, i)
+                                                        <span class="ansi-bright-black-fg">#= In[7]:15 =#</span>
+                                                        rv += primal(drv)
+                                                        <span class="ansi-bright-black-fg">#= In[7]:16 =#</span>
+                                                    end
+                                                    <span class="ansi-bright-black-fg">#= simdloop.jl:78 =#</span>
+                                                    var"##i#228" += 1
+                                                    <span class="ansi-bright-black-fg">#= simdloop.jl:79 =#</span>
+                                                    $(Expr(:loopinfo, Symbol("julia.simdloop"), nothing))
+                                                    <span class="ansi-bright-black-fg">#= simdloop.jl:80 =#</span>
+                                                end
+                                            end
+                                        end
+                                    end
+                                    <span class="ansi-bright-black-fg">#= simdloop.jl:84 =#</span>
+                                end
+                            end
+                            <span class="ansi-bright-black-fg">#= simdloop.jl:86 =#</span>
+                            nothing
+                        end
+                $(Expr(:inbounds, :pop))
+                var"#105#val"
+            end
+            <span class="ansi-bright-black-fg">#= In[7]:17 =#</span>
+            sum_pb(a, df, dx) = begin
+                    <span class="ansi-bright-black-fg">#= In[7]:17 =#</span>
+                    <span class="ansi-bright-black-fg">#= In[7]:18 =#</span>
+                    (_, dx, _) = outer_pullback(mem[1], a, broadcast_getindex, dx, 1)
+                    <span class="ansi-bright-black-fg">#= In[7]:19 =#</span>
+                    begin
+                        $(Expr(:inbounds, true))
+                        local var"#106#val" = begin
+                                    <span class="ansi-bright-black-fg">#= simdloop.jl:69 =#</span>
+                                    let var"##r#229" = (eachindex(mem))[2:end]
+                                        <span class="ansi-bright-black-fg">#= simdloop.jl:70 =#</span>
+                                        for var"##i#230" = Base.simd_outer_range(var"##r#229")
+                                            <span class="ansi-bright-black-fg">#= simdloop.jl:71 =#</span>
+                                            let var"##n#231" = Base.simd_inner_length(var"##r#229", var"##i#230")
+                                                <span class="ansi-bright-black-fg">#= simdloop.jl:72 =#</span>
+                                                if zero(var"##n#231") &lt; var"##n#231"
+                                                    <span class="ansi-bright-black-fg">#= simdloop.jl:74 =#</span>
+                                                    let var"##i#232" = zero(var"##n#231")
+                                                        <span class="ansi-bright-black-fg">#= simdloop.jl:75 =#</span>
+                                                        while var"##i#232" &lt; var"##n#231"
+                                                            <span class="ansi-bright-black-fg">#= simdloop.jl:76 =#</span>
+                                                            local i = Base.simd_index(var"##r#229", var"##i#230", var"##i#232")
+                                                            <span class="ansi-bright-black-fg">#= simdloop.jl:77 =#</span>
+                                                            begin
+                                                                <span class="ansi-bright-black-fg">#= In[7]:20 =#</span>
+                                                                (_, dx, _) = outer_pullback(mem[i], a, broadcast_getindex, dx, i)
+                                                                <span class="ansi-bright-black-fg">#= In[7]:21 =#</span>
+                                                            end
+                                                            <span class="ansi-bright-black-fg">#= simdloop.jl:78 =#</span>
+                                                            var"##i#232" += 1
+                                                            <span class="ansi-bright-black-fg">#= simdloop.jl:79 =#</span>
+                                                            $(Expr(:loopinfo, Symbol("julia.simdloop"), nothing))
+                                                            <span class="ansi-bright-black-fg">#= simdloop.jl:80 =#</span>
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                            <span class="ansi-bright-black-fg">#= simdloop.jl:84 =#</span>
+                                        end
+                                    end
+                                    <span class="ansi-bright-black-fg">#= simdloop.jl:86 =#</span>
+                                    nothing
+                                end
+                        $(Expr(:inbounds, :pop))
+                        var"#106#val"
+                    end
+                    <span class="ansi-bright-black-fg">#= In[7]:22 =#</span>
+                    (df, dx)
+                end
+            <span class="ansi-bright-black-fg">#= In[7]:24 =#</span>
+            (sum_pb, rv)
+        end
+    inner_forward(pb::Any, f::AbstractPlainDual{&lt;:typeof(my_sum)}, x::AbstractPlainDual{&lt;:Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{1}}}) = begin
+            $(Expr(:meta, :inline))
+            (nothing, plaindual((primal(f))(primal(x))))
+        end
+end</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="how-does-it-work" class="level1">
+<h1>How does it work?</h1>
+<p>Like “standard” “compiled” reverse mode AD frameworks. Special care is take to capture as few things as possible, to keep the “tape” small.</p>
+</section>
+<section id="why" class="level1">
+<h1>Why?</h1>
+<p>For the functions for which it works, it’s faster than Mooncake or Enzyme. The below table benchmarks (batched) gradient preparation and (batched) gradient evaluation for the <code>radon_mod-radon_county</code> posterior from <a href="https://github.com/stan-dev/posteriordb">posteriordb</a> (as reimplemented in this <code>.qmd</code> file) for this package, Mooncake and Enzyme. All numbers are runtimes in seconds, the row <code>BATCH_TYPE</code> contains the used “underlying” type. <code>SReal{16, Float64}</code> e.g.&nbsp;means that 16 gradients get computed in parallel.</p>
+<div id="2e6e4985" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-display" data-execution_count="8">
+<div><div style="float: left;"><span>8×7 DataFrame</span></div><div style="clear: both;"></div></div><div class="data-frame" style="overflow-x: scroll;">
+<table class="data-frame caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th class="rowNumber" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;">Row</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">WHAT</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">x1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">x2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">x3</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">x4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">x5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">x6</th>
+</tr>
+<tr class="subheader headerLastRow even">
+<th class="rowNumber" data-quarto-table-cell-role="th" style="text-align: right; font-weight: bold;"></th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="String">String</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Any">Any</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Any">Any</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Any">Any</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Any">Any</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Any">Any</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th" title="Any">Any</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">1</td>
+<td style="text-align: left;">BATCH_TYPE</td>
+<td style="text-align: left;">Float64</td>
+<td style="text-align: left;">SReal{1, Float64}</td>
+<td style="text-align: left;">SReal{2, Float64}</td>
+<td style="text-align: left;">SReal{4, Float64}</td>
+<td style="text-align: left;">SReal{8, Float64}</td>
+<td style="text-align: left;">SReal{16, Float64}</td>
+</tr>
+<tr class="even">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">2</td>
+<td style="text-align: left;">Prepare my gradient</td>
+<td style="text-align: left;">0.74</td>
+<td style="text-align: left;">0.79</td>
+<td style="text-align: left;">0.44</td>
+<td style="text-align: left;">0.49</td>
+<td style="text-align: left;">0.6</td>
+<td style="text-align: left;">0.89</td>
+</tr>
+<tr class="odd">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">3</td>
+<td style="text-align: left;">Prepare Mooncake gradient</td>
+<td style="text-align: left;">38.0</td>
+<td style="text-align: left;">6.4</td>
+<td style="text-align: left;">4.4</td>
+<td style="text-align: left;">6.3</td>
+<td style="text-align: left;">7.3</td>
+<td style="text-align: left;">11.0</td>
+</tr>
+<tr class="even">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">4</td>
+<td style="text-align: left;">Prepare Enzyme gradient</td>
+<td style="text-align: left;">0.0093</td>
+<td style="text-align: left;">1.3e-5</td>
+<td style="text-align: left;">1.7e-5</td>
+<td style="text-align: left;">1.1e-5</td>
+<td style="text-align: left;">1.2e-5</td>
+<td style="text-align: left;">1.5e-5</td>
+</tr>
+<tr class="odd">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">5</td>
+<td style="text-align: left;">Plain evaluation</td>
+<td style="text-align: left;">14.0</td>
+<td style="text-align: left;">12.0</td>
+<td style="text-align: left;">12.0</td>
+<td style="text-align: left;">13.0</td>
+<td style="text-align: left;">13.0</td>
+<td style="text-align: left;">25.0</td>
+</tr>
+<tr class="even">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">6</td>
+<td style="text-align: left;">My gradient</td>
+<td style="text-align: left;">37.0</td>
+<td style="text-align: left;">35.0</td>
+<td style="text-align: left;">38.0</td>
+<td style="text-align: left;">44.0</td>
+<td style="text-align: left;">55.0</td>
+<td style="text-align: left;">98.0</td>
+</tr>
+<tr class="odd">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">7</td>
+<td style="text-align: left;">Mooncake gradient</td>
+<td style="text-align: left;">150.0</td>
+<td style="text-align: left;">160.0</td>
+<td style="text-align: left;">160.0</td>
+<td style="text-align: left;">450.0</td>
+<td style="text-align: left;">670.0</td>
+<td style="text-align: left;">1400.0</td>
+</tr>
+<tr class="even">
+<td class="rowNumber" style="text-align: right; font-weight: bold;">8</td>
+<td style="text-align: left;">Enzyme gradient</td>
+<td style="text-align: left;">36.0</td>
+<td style="text-align: left;">89.0</td>
+<td style="text-align: left;">110.0</td>
+<td style="text-align: left;">110.0</td>
+<td style="text-align: left;">180.0</td>
+<td style="text-align: left;">300.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
