@@ -504,16 +504,12 @@ end
     @inline Base.@propagate_inbounds broadcast_getindex(x::Real, i::Int64) = return x
     @inline my_sum(x::Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{0}}) = return broadcast_getindex(x,1)
     @inline Base.@propagate_inbounds broadcast_getindex(x::SReal, i::Int64) = return x
-    @inline StanBlocks.normal_lpdf(y, loc, scale::Real) = begin
-        s2 = StanBlocks.@broadcasted square(y-loc)
-        return -(log(scale) * length(s2)+.5*my_sum(s2)/square(scale))
-    end
     StanBlocks.normal_lpdf(y, loc, scale::SReal) = begin
         s2 = StanBlocks.@broadcasted square(y-loc)
         return -(log(scale) * length(s2)+.5*my_sum(s2)/square(scale))
     end
-    @inline Base.sum(x::SReal) = return sum(x.val)
 end
+@inline Base.sum(x::SReal) = sum(x.val)
 @overlay begin 
     @inline Base.sum(x::Float64) = return identity(x)
     @inline Base.sum(x::SReal) = return identity(x)

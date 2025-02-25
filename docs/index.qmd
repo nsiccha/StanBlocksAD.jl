@@ -1,0 +1,277 @@
+{{< include ../README.md >}}
+```{julia}
+using StanBlocks, Chairmarks, DataFrames
+import PosteriorDB, Enzyme, Mooncake, DifferentiationInterface, StanBlocksAD
+import StanBlocksAD: @auto, @fw, @pb, @overlay, @rule, AbstractDual, Dual, Tape, primal, deriv, SReal, constview, augment_pullback, deaugment_pullback, maybeplaindual, inner_forward, outer_replay, outer_pullback, inner_pullback, square, my_sum
+```
+
+# How to use
+
+StanBlocksAD.jl relies on either wrapping the user-written code in one of its macros or on hand-written rules. AD can be dona via the `@auto` or the `@overlay` macro, hand-written rules can be provided via the `@rule` macro. Using the the `@auto` or the `@overlay` macro is of course easier than using the `@rule` macro, but also more limited.
+
+## `@auto`
+
+"Automatically" define the standard (without duals), the forward and the reverse pass for a function. See usage in [`src/StanBlocksAD.jl`](https://github.com/nsiccha/StanBlocksAD.jl/blob/fa2d3564642ebff2bfb6ac322965e2211552c8c4/src/StanBlocksAD.jl#L500-L516).
+
+### Trivial example: `my_square`
+
+::: {.panel-tabset}
+
+#### Macro usage
+
+```julia
+@auto @inline my_square(x) = return x * x
+```
+
+#### Macro expansion
+
+```{julia}
+@macroexpand @auto @inline my_square(x) = return x * x
+```
+:::
+
+### Nontrivial example: `StanBlocks.normal_lpdf`
+
+::: {.panel-tabset}
+
+#### Macro usage
+
+```julia
+@auto @inline StanBlocks.normal_lpdf(y, loc, scale::Real) = begin
+    s2 = StanBlocks.@broadcasted square(y-loc)
+    return -(log(scale) * length(s2)+.5*my_sum(s2)/square(scale))
+end
+```
+
+#### Macro expansion
+
+```{julia}
+@macroexpand @auto @inline StanBlocks.normal_lpdf(y, loc, scale::Real) = begin
+    s2 = StanBlocks.@broadcasted square(y-loc)
+    return -(log(scale) * length(s2)+.5*my_sum(s2)/square(scale))
+end
+```
+:::
+
+## `@overlay`
+
+Does the same thing as @auto, but doesn't define the "standard" function (without duals), like [Mooncake.@mooncake_overlay](https://compintell.github.io/Mooncake.jl/stable/utilities/defining_rules/#Mooncake.@mooncake_overlay-utilities-defining_rules). Useful for manually (hah!) doing AD for functions from external packages. 
+
+See usage in [`src/StanBlocksAD.jl`](https://github.com/nsiccha/StanBlocksAD.jl/blob/fa2d3564642ebff2bfb6ac322965e2211552c8c4/src/StanBlocksAD.jl#L517-L521).
+
+### Example: `Base.sum(x::Float64)`
+
+::: {.panel-tabset}
+
+#### Macro usage
+
+```julia
+@overlay @inline Base.sum(x::Float64) = return identity(x)
+```
+
+#### Macro expansion
+
+```{julia}
+@macroexpand @overlay @inline Base.sum(x::Float64) = return identity(x)
+```
+:::
+
+## `@rule`
+
+The `@rule` macro makes it "easy" to define hand-written rules. It does funky things behind the scenes, and handles some function definition right hand sides in a special way. Best understood by looking at examples and simultaneously talking to me. 
+
+See usage at [`src/StanBlocksAD.jl`](https://github.com/nsiccha/StanBlocksAD.jl/blob/fa2d3564642ebff2bfb6ac322965e2211552c8c4/src/StanBlocksAD.jl#L428-L490). 
+
+SOMETHING IMPORTANT IS MISSING, WILL ADD LATER.
+
+### Trivial examples
+
+::: {.panel-tabset}
+
+#### Macro usage
+
+```julia
+@rule begin 
+    # No pullback.
+    @inline inner_forward(pb, f::Colon, i, j) = nothing
+    # Custom @inline'd pullback, "standard" forward pass 
+    @inline inner_forward(pb, f::typeof(identity), x) = (a, df, dx)->(df, dx + a)
+    # Custom @inline'd pullback, "standard" forward pass. Uses non-captured but recomputed primal information in pullback.
+    @inline inner_forward(pb, f::typeof(getproperty), x, i::Symbol) = (a, df, dx, di) -> (df, dmergeproperty(dx, a, primal(di)), di)
+    # Custom pullback and forward pass.
+    @inline inner_forward(pb, f::typeof(/), x, y) = begin
+        rv = f(x,y)
+        (a, df, dx, dy) -> (df, dx+a/y, dy-a*rv/y), rv
+    end
+end
+```
+
+#### Macro expansion
+
+```{julia}
+@macroexpand @rule begin 
+    # No pullback.
+    @inline inner_forward(pb, f::Colon, i, j) = nothing
+    # Custom @inline'd pullback, "standard" forward pass
+    @inline inner_forward(pb, f::typeof(identity), x) = (a, df, dx)->(df, dx + a)
+    # Custom @inline'd pullback, "standard" forward pass. Uses non-captured but recomputed primal information in pullback.
+    @inline inner_forward(pb, f::typeof(getproperty), x, i::Symbol) = (a, df, dx, di) -> (df, dmergeproperty(dx, a, primal(di)), di)
+    # Custom pullback and forward pass.
+    @inline inner_forward(pb, f::typeof(/), x, y) = begin
+        rv = f(x,y)
+        (a, df, dx, dy) -> (df, dx+a/y, dy-a*rv/y), rv
+    end
+end
+```
+:::
+
+
+### Non-trivial example: `my_sum`
+
+::: {.panel-tabset}
+
+#### Macro usage
+
+```julia
+@rule @inline inner_forward(pb, f::typeof(my_sum), x::Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{1}}) = begin 
+    mem = if isa(pb, Tape{Missing})
+        pb_type = Base._return_type(outer_forward, Tuple{Tape{Missing},typeof(broadcast_getindex),typeof(dual(x)),Int64})
+        @assert isconcretetype(pb_type) outer_forward(Tape(), broadcast_getindex, dual(x), 1)
+        pb_type = pb_type.types[1]
+        Vector{pb_type}(undef, length(x))
+    else
+        resize!(pb.mem, length(x))
+    end
+    rv = 0.
+    (mem[1], drv) = outer_forward(Tape(), broadcast_getindex, dual(x), 1)
+    rv = primal(drv)
+    @inbounds @simd for i in eachindex(x)[2:end]
+        (mem[i], drv) = outer_forward(Tape(), broadcast_getindex, dual(x), i)
+        rv += primal(drv)
+    end
+    sum_pb(a, df, dx) = begin 
+        (_, dx, _) = outer_pullback(mem[1], a, broadcast_getindex, dx, 1)
+        @inbounds @simd for i in eachindex(mem)[2:end]
+            (_, dx, _) = outer_pullback(mem[i], a, broadcast_getindex, dx, i) 
+        end
+        (df, dx)
+    end
+    sum_pb, (rv)
+end
+```
+
+#### Macro expansion
+
+```{julia}
+@macroexpand @rule @inline inner_forward(pb, f::typeof(my_sum), x::Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{1}}) = begin 
+    mem = if isa(pb, Tape{Missing})
+        pb_type = Base._return_type(outer_forward, Tuple{Tape{Missing},typeof(broadcast_getindex),typeof(dual(x)),Int64})
+        @assert isconcretetype(pb_type) outer_forward(Tape(), broadcast_getindex, dual(x), 1)
+        pb_type = pb_type.types[1]
+        Vector{pb_type}(undef, length(x))
+    else
+        resize!(pb.mem, length(x))
+    end
+    rv = 0.
+    (mem[1], drv) = outer_forward(Tape(), broadcast_getindex, dual(x), 1)
+    rv = primal(drv)
+    @inbounds @simd for i in eachindex(x)[2:end]
+        (mem[i], drv) = outer_forward(Tape(), broadcast_getindex, dual(x), i)
+        rv += primal(drv)
+    end
+    sum_pb(a, df, dx) = begin 
+        (_, dx, _) = outer_pullback(mem[1], a, broadcast_getindex, dx, 1)
+        @inbounds @simd for i in eachindex(mem)[2:end]
+            (_, dx, _) = outer_pullback(mem[i], a, broadcast_getindex, dx, i) 
+        end
+        (df, dx)
+    end
+    sum_pb, (rv)
+end
+```
+:::
+
+# How does it work?
+
+Like "standard" "compiled" reverse mode AD frameworks. Special care is take to capture as few things as possible, to keep the "tape" small.
+
+# Why?
+
+For the functions for which it works, it's faster than Mooncake or Enzyme. The below table benchmarks (batched) gradient preparation and (batched) gradient evaluation for the `radon_mod-radon_county` posterior from [posteriordb](https://github.com/stan-dev/posteriordb) (as reimplemented in this `.qmd` file) for this package, Mooncake and Enzyme. All numbers are runtimes in seconds, the row `BATCH_TYPE` contains the used "underlying" type. `SReal{16, Float64}` e.g. means that 16 gradients get computed in parallel.
+
+```{julia}
+pdb = PosteriorDB.database()
+post = PosteriorDB.posterior(pdb, "radon_mod-radon_county")
+jlpdf = StanBlocks.julia_implementation(post)
+(;J, county, y) = jlpdf.f
+n = StanBlocks.dimension(jlpdf)
+@auto @inline StanBlocks.normal_lpdf(y, loc, scale::Real) = begin
+    s2 = StanBlocks.@broadcasted square(y-loc)
+    return -(log(scale) * length(s2)+.5*my_sum(s2)/square(scale))
+end
+radon_county_lpdf(;J, county, y, BATCH_TYPE=Float64) = begin
+    @auto lpdf_fw lpdf_pb lpdf(x) = @views begin
+        target = 0.
+        a = x[1:J]
+        mu_a = x[J+1]
+        tmp = x[J+2]
+        target += log(100)-tmp-2*StanBlocks.log1pexp(-tmp)
+        sigma_a = 100 * StanBlocks.logistic(tmp)
+        tmp = x[J+3]
+        target += log(100)-tmp-2*StanBlocks.log1pexp(-tmp)
+        sigma_y = 100 * StanBlocks.logistic(tmp) 
+        # y_hat = x[county]
+        y_hat = constview(x, county)
+        target += StanBlocks.normal_lpdf(mu_a, 0, 1)
+        target += StanBlocks.normal_lpdf(a, mu_a, sigma_a)
+        target += StanBlocks.normal_lpdf(y, y_hat, sigma_y)
+        return sum(target)
+    end
+    xg = Dual(zeros(BATCH_TYPE, J+3), zeros(BATCH_TYPE, J+3))
+    pb, _ = lpdf_fw(Tape(), xg)
+    lpdfg(x) = begin 
+        primal(xg) .= x
+        deriv(xg) .= 0
+        pb_, rv = lpdf_fw(pb, xg)
+        lpdf_pb(pb_, Dual(primal(rv), 1.), xg)
+        primal(rv), deriv(xg)
+    end
+    StanBlocks.VectorPosterior(lpdf, missing, missing, n), lpdfg
+end
+
+round2(;kwargs...) = round2((;kwargs...))
+round2(x::Type) = x
+round2(x::Integer) = x
+round2(x::Float64) = round(x; sigdigits=2)
+round2(x::NamedTuple) = map(round2, x)
+round2(x::Tuple) = map(round2, x)
+areapprox(args...) = begin
+    uargs = map(untangent, args)
+    for i in 1:length(args), j in 1:i-1
+        isapprox(uargs[i], uargs[j]) || return false
+    end 
+    return true
+end
+untangent(x::Real) = x
+untangent(x::SReal) = sum(x.val)
+untangent(x::Vector{<:Real}) = x
+untangent(x::Vector{<:SReal}) = mapreduce(xi->[xi.val...], hcat, x)
+untangent(x::Vector{<:Mooncake.Tangent}) = mapreduce(xi->[xi.fields.val.fields.data...], hcat, x)
+BATCH_TYPES = (Float64, SReal{1,Float64}, SReal{2,Float64}, SReal{4,Float64}, SReal{8,Float64}, SReal{16,Float64})
+timings = mapreduce(hcat, BATCH_TYPES) do BATCH_TYPE
+    ctime1 = @elapsed mlpdf, mlpdfg = radon_county_lpdf(;J, county, y, BATCH_TYPE)
+    ctime2 = @elapsed mlpdfg2 = StanBlocks.with_gradient(mlpdf, DifferentiationInterface.AutoMooncake(;config=nothing); T=BATCH_TYPE).g
+    ctime3 = @elapsed mlpdfg3 = StanBlocks.with_gradient(mlpdf, DifferentiationInterface.AutoEnzyme(;mode=Enzyme.set_runtime_activity(Enzyme.ReverseWithPrimal), function_annotation=Enzyme.Const); T=BATCH_TYPE).g
+    x = randn(BATCH_TYPE, n)
+    @assert areapprox(mlpdf(x), mlpdfg(x)[1], mlpdfg2(x)[1], mlpdfg3(x)[1])
+    @assert areapprox(mlpdfg(x)[2], mlpdfg2(x)[2], mlpdfg3(x)[2])
+    rv = [(@be randn(BATCH_TYPE, n) mlpdf), (@be randn(BATCH_TYPE, n) mlpdfg), (@be randn(BATCH_TYPE, n) mlpdfg2), (@be randn(BATCH_TYPE, n) mlpdfg3)]
+    btimes = map(rv) do rvi
+        minimum(rvi).time * 1e6
+    end
+    vcat(BATCH_TYPE, ctime1, ctime2, ctime3, btimes)
+end
+
+df = DataFrame(round2.(timings), :auto)
+insertcols!(df, 1, :WHAT=>["BATCH_TYPE", "Prepare my gradient", "Prepare Mooncake gradient", "Prepare Enzyme gradient", "Plain evaluation", "My gradient", "Mooncake gradient", "Enzyme gradient"])
+```
