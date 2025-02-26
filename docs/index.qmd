@@ -7,7 +7,7 @@ import StanBlocksAD: @auto, @fw, @pb, @overlay, @rule, AbstractDual, Dual, Tape,
 
 # How to use
 
-StanBlocksAD.jl relies on either wrapping the user-written code in one of its macros or on hand-written rules. AD can be dona via the `@auto` or the `@overlay` macro, hand-written rules can be provided via the `@rule` macro. Using the the `@auto` or the `@overlay` macro is of course easier than using the `@rule` macro, but also more limited.
+StanBlocksAD.jl relies on either wrapping the user-written code in one of its macros or on hand-written rules. AD can be e via the `@auto` or the `@overlay` macro, hand-written rules can be provided via the `@rule` macro. Using the the `@auto` or the `@overlay` macro is of course easier than using the `@rule` macro, but also more limited.
 
 ## `@auto`
 
@@ -193,7 +193,7 @@ end
 
 # How does it work?
 
-Like "standard" "compiled" reverse mode AD frameworks. Special care is take to capture as few things as possible, to keep the "tape" small.
+Like "standard" "compiled" reverse mode AD frameworks. Special care is taken to capture as few things as possible, to keep the "tape" small.
 
 # Why?
 
@@ -263,15 +263,20 @@ timings = mapreduce(hcat, BATCH_TYPES) do BATCH_TYPE
     ctime2 = @elapsed mlpdfg2 = StanBlocks.with_gradient(mlpdf, DifferentiationInterface.AutoMooncake(;config=nothing); T=BATCH_TYPE).g
     ctime3 = @elapsed mlpdfg3 = StanBlocks.with_gradient(mlpdf, DifferentiationInterface.AutoEnzyme(;mode=Enzyme.set_runtime_activity(Enzyme.ReverseWithPrimal), function_annotation=Enzyme.Const); T=BATCH_TYPE).g
     x = randn(BATCH_TYPE, n)
+    ftimes = [(@elapsed mlpdf(x)), (@elapsed mlpdfg(x)), (@elapsed mlpdfg2(x)), (@elapsed mlpdfg3(x))]
     @assert areapprox(mlpdf(x), mlpdfg(x)[1], mlpdfg2(x)[1], mlpdfg3(x)[1])
     @assert areapprox(mlpdfg(x)[2], mlpdfg2(x)[2], mlpdfg3(x)[2])
     rv = [(@be randn(BATCH_TYPE, n) mlpdf), (@be randn(BATCH_TYPE, n) mlpdfg), (@be randn(BATCH_TYPE, n) mlpdfg2), (@be randn(BATCH_TYPE, n) mlpdfg3)]
     btimes = map(rv) do rvi
         minimum(rvi).time * 1e6
     end
-    vcat(BATCH_TYPE, ctime1, ctime2, ctime3, btimes)
+    vcat(BATCH_TYPE, ctime1, ctime2, ctime3, ftimes, btimes)
 end
 
 df = DataFrame(round2.(timings), :auto)
-insertcols!(df, 1, :WHAT=>["BATCH_TYPE", "Prepare my gradient", "Prepare Mooncake gradient", "Prepare Enzyme gradient", "Plain evaluation", "My gradient", "Mooncake gradient", "Enzyme gradient"])
+insertcols!(df, 1, :WHAT=>[
+    "BATCH_TYPE", "Prepare my gradient", "Prepare Mooncake gradient", "Prepare Enzyme gradient", 
+    "First plain evaluation", "First my gradient", "First Mooncake gradient", "First Enzyme gradient",
+    "Plain evaluation", "My gradient", "Mooncake gradient", "Enzyme gradient"
+])
 ```
